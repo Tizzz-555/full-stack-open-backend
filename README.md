@@ -1,4 +1,4 @@
-# FullStackOpen (Back-end)
+# FullStackOpen (Backend)
 
 This repository contains my solutions for *part 3* of the "Full Stack Open" course by the University of Helsinki, hosted at []
 
