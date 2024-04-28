@@ -1,6 +1,8 @@
 const express = require("express");
 const app = express();
 
+app.use(express.json());
+
 let persons = [
   {
     id: 1,
@@ -24,12 +26,20 @@ let persons = [
   },
 ];
 
-app.get("/", (request, response) => {
-  response.send("<h1>This is phonebook backend ☎️</h1>");
+app.get("/", (req, res) => {
+  res.send("<h1>This is phonebook backend ☎️</h1>");
 });
 
-app.get("/api/persons", (request, response) => {
-  response.json(persons);
+app.get("/api/persons", (req, res) => {
+  res.json(persons);
+});
+
+app.get("/info", (req, res) => {
+  const totalPersons = persons.length;
+  res.send(`
+  <p>Phonebook has info for ${totalPersons} people</p>
+  <p>${Date()}</p>
+  `);
 });
 
 const PORT = 3001;
