@@ -53,6 +53,30 @@ app.get("/info", (req, res) => {
   `);
 });
 
+const generateRandomId = () => {
+  const randomId = Math.floor(Math.random() * 10000);
+  return randomId;
+};
+
+app.post("/api/persons", (request, response) => {
+  const body = request.body;
+
+  if (!body.name && !body.number) {
+    return response.status(400).json({
+      error: "Content Missing",
+    });
+  }
+
+  const person = {
+    name: body.name,
+    number: body.number,
+    id: generateRandomId(),
+  };
+
+  persons = persons.concat(person);
+  response.json(person);
+});
+
 app.delete("/api/persons/:id", (req, res) => {
   const id = Number(req.params.id);
   persons = persons.filter((person) => person.id !== id);
