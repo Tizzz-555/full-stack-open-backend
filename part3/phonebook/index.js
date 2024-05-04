@@ -1,10 +1,11 @@
 const express = require("express");
 const morgan = require("morgan");
+const cors = require("cors");
 
 const app = express();
 
+app.use(cors());
 app.use(express.json());
-
 app.use(
   morgan(":method :url :status :res[content-length] - :response-time ms :body")
 );
@@ -67,17 +68,17 @@ const generateRandomId = () => {
   return randomId;
 };
 
-app.post("/api/persons", (request, response) => {
-  const body = request.body;
+app.post("/api/persons", (req, res) => {
+  const body = req.body;
 
   if (!body.name || !body.number) {
-    return response.status(400).json({
+    return res.status(400).json({
       error: !body.name ? "Name missing" : "Number missing",
     });
   }
 
   if (persons.map((person) => person.name).includes(body.name)) {
-    return response.status(400).json({
+    return res.status(400).json({
       error: "Name must be unique ",
     });
   }
@@ -89,14 +90,20 @@ app.post("/api/persons", (request, response) => {
   };
 
   persons = persons.concat(person);
-  response.json(person);
+  res.json(person);
 });
 
 app.delete("/api/persons/:id", (req, res) => {
   const id = Number(req.params.id);
+  const person = persons.find((person) => person.id === id);
+
+  if (!person) {
+    return res.status(404).json({ error: "Person not found" });
+  }
+
   persons = persons.filter((person) => person.id !== id);
 
-  res.status(204).end();
+  res.status(200).json(person);
 });
 
 const PORT = 3001;
