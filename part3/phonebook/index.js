@@ -6,6 +6,7 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use(express.static("dist"));
 app.use(
   morgan(":method :url :status :res[content-length] - :response-time ms :body")
 );
@@ -106,6 +107,6 @@ app.delete("/api/persons/:id", (req, res) => {
   res.status(200).json(person);
 });
 
-const PORT = 3001;
+const PORT = 3000;
 app.listen(PORT);
 console.log(`Server running on port ${PORT}`);
