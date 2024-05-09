@@ -46,10 +46,35 @@ app.get("/info", (req, res) => {
   `);
 });
 
-const generateRandomId = () => {
-  const randomId = Math.floor(Math.random() * 10000);
-  return randomId;
-};
+// const generateRandomId = () => {
+//   const randomId = Math.floor(Math.random() * 10000);
+//   return randomId;
+// };
+
+// app.post("/api/persons", (req, res) => {
+//   const body = req.body;
+
+//   if (!body.name || !body.number) {
+//     return res.status(400).json({
+//       error: !body.name ? "Name missing" : "Number missing",
+//     });
+//   }
+
+//   if (persons.map((person) => person.name).includes(body.name)) {
+//     return res.status(400).json({
+//       error: "Name must be unique ",
+//     });
+//   }
+
+//   const person = {
+//     name: body.name,
+//     number: body.number,
+//     id: generateRandomId(),
+//   };
+
+//   persons = persons.concat(person);
+//   res.json(person);
+// });
 
 app.post("/api/persons", (req, res) => {
   const body = req.body;
@@ -60,20 +85,14 @@ app.post("/api/persons", (req, res) => {
     });
   }
 
-  if (persons.map((person) => person.name).includes(body.name)) {
-    return res.status(400).json({
-      error: "Name must be unique ",
-    });
-  }
-
-  const person = {
+  const person = new Person({
     name: body.name,
     number: body.number,
-    id: generateRandomId(),
-  };
+  });
 
-  persons = persons.concat(person);
-  res.json(person);
+  person.save().then((savedNote) => {
+    response.json(savedNote);
+  });
 });
 
 app.delete("/api/persons/:id", (req, res) => {
