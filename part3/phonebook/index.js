@@ -5,6 +5,23 @@ require("dotenv").config();
 
 const Person = require("./models/person");
 
+const errorHandler = (error, req, res, next) => {
+  console.error(error.message);
+
+  if (error.name === "CastError") {
+    return res.status(400).send({ error: "malformatted id" });
+  }
+
+  if (error.message === "No entry with this Id") {
+    return res.status(404).json({ error: error.message });
+  }
+
+  if (error.message === "Name missing" || error.message === "Number missing") {
+    return res.status(400).json({ error: error.message });
+  }
+  next(error);
+};
+
 const cors = require("cors");
 
 app.use(cors());
@@ -48,13 +65,11 @@ app.get("/info", (req, res) => {
   `);
 });
 
-app.post("/api/persons", (req, res) => {
+app.post("/api/persons", (req, res, next) => {
   const body = req.body;
 
   if (!body.name || !body.number) {
-    return res.status(400).json({
-      error: !body.name ? "Name missing" : "Number missing",
-    });
+    throw new Error(!body.name ? "Name missing" : "Number missing");
   }
 
   const person = new Person({
@@ -62,31 +77,31 @@ app.post("/api/persons", (req, res) => {
     number: body.number,
   });
 
-  person.save().then((savedNote) => {
-    res.json(savedNote);
-  });
+  person
+    .save()
+    .then((savedNote) => {
+      res.json(savedNote);
+    })
+    .catch((error) => next(error));
 });
 
-app.delete("/api/persons/:id", (req, res) => {
+app.delete("/api/persons/:id", (req, res, next) => {
   Person.findByIdAndDelete(req.params.id)
     .then((result) => {
       console.log(result);
       if (result) {
-        res
-          .status(200)
-          .send({
-            name: `${result.name}`,
-            success: `${result.name} successfully deleted`,
-          });
+        res.status(200).send({
+          name: result.name,
+          success: `${result.name} successfully deleted`,
+        });
       } else {
-        res.status(400).json({ error: "No entry with this Id" });
+        throw new Error("No entry with this Id");
       }
     })
-    .catch((error) => {
-      console.log(error);
-      res.status(400).send({ error: "malformatted id" });
-    });
+    .catch((error) => next(error));
 });
+
+app.use(errorHandler);
 
 const PORT = process.env.PORT;
 app.listen(PORT);
