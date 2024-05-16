@@ -35,34 +35,38 @@ morgan.token("body", function (req, res) {
   return JSON.stringify(req.body);
 });
 
-let persons = [];
-
 app.get("/", (req, res) => {
   res.send("<h1>This is phonebook backend ☎️</h1>");
 });
 
 app.get("/api/persons", (req, res) => {
-  Person.find({}).then((notes) => {
-    res.json(notes);
+  Person.find({}).then((persons) => {
+    res.json(persons);
   });
 });
 
-app.get("/api/persons/:id", (req, res) => {
-  const id = Number(req.params.id);
-  const person = persons.find((person) => person.id === id);
-  if (person) {
-    res.json(person);
-  } else {
-    res.status(404).send(`There are no records with id: ${id}`);
-  }
+app.get("/api/persons/:id", (req, res, next) => {
+  Person.findById(req.params.id)
+    .then((person) => {
+      if (person) {
+        res.json(person);
+      } else {
+        res.status(404).end();
+      }
+    })
+    .catch((error) => next(error));
 });
 
-app.get("/info", (req, res) => {
-  const totalPersons = persons.length;
-  res.send(`
+app.get("/info", (req, res, next) => {
+  Person.find({})
+    .then((persons) => {
+      const totalPersons = persons.length;
+      res.send(`
   <p>Phonebook has info for ${totalPersons} people</p>
   <p>${Date()}</p>
   `);
+    })
+    .catch((error) => next(error));
 });
 
 app.post("/api/persons", (req, res, next) => {
