@@ -12,6 +12,9 @@ const errorHandler = (error, req, res, next) => {
     return res.status(400).send({ error: "malformatted id" });
   }
 
+  if (error.name === "ValidationError") {
+    return res.status(400).json({ error: error.message });
+  }
   if (error.message === "No entry with this Id") {
     return res.status(404).json({ error: error.message });
   }
@@ -106,21 +109,22 @@ app.delete("/api/persons/:id", (req, res, next) => {
 });
 
 app.put("/api/persons/:id", (req, res, next) => {
-  const body = req.body;
-  const person = {
-    name: body.name,
-    number: body.number,
-  };
+  const { name, number } = req.body;
 
-  Person.findByIdAndUpdate(req.params.id, person, { new: true })
+  Person.findByIdAndUpdate(
+    req.params.id,
+    { name, number },
+    { new: true, runValidators: true, context: "query" }
+  )
     .then((updatedPerson) => {
-      console.log(updatedPerson);
       res.json(updatedPerson);
     })
     .catch((error) => next(error));
 });
+
 app.use(errorHandler);
 
 const PORT = process.env.PORT;
-app.listen(PORT);
-console.log(`Server running on port ${PORT}`);
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
