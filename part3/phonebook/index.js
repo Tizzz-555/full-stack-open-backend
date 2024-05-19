@@ -75,9 +75,9 @@ app.get("/info", (req, res, next) => {
 app.post("/api/persons", (req, res, next) => {
   const body = req.body;
 
-  if (!body.name || !body.number) {
-    throw new Error(!body.name ? "Name missing" : "Number missing");
-  }
+  // if (!body.name || !body.number) {
+  //   throw new Error(!body.name ? "Name missing" : "Number missing");
+  // }
 
   const person = new Person({
     name: body.name,

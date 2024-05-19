@@ -9,8 +9,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build:ui": "rm -rf dist && cd ../../../full-stack-open/part2/phonebook && npm run build && cp -r dist ../../../full-stack-open-backend/part3/phonebook",
     "deploy": "fly deploy",
-    "deploy:full": "npm run build:ui && npm run deploy",    
-    "logs:prod": "fly logs"
+    "deploy:full": "npm run build:ui && npm run deploy",
+    "logs:prod": "fly logs",
+    "lint": "eslint ."
   },
   "author": "Mattia Beccari",
   "license": "MIT",
@@ -22,7 +23,11 @@
     "morgan": "^1.10.0"
   },
   "devDependencies": {
+    "@eslint/js": "^9.3.0",
     "@flydotio/dockerfile": "^0.5.7",
+    "@stylistic/eslint-plugin-js": "^2.1.0",
+    "eslint": "^9.3.0",
+    "globals": "^15.2.0",
     "nodemon": "^3.1.0"
   }
 }
