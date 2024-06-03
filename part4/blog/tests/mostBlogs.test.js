@@ -2,7 +2,7 @@ const { test, describe } = require("node:test");
 const assert = require("node:assert");
 const listHelper = require("../utils/list_helper");
 
-describe("favorite blog", () => {
+describe("most blogs", () => {
   const listWithOneBlog = [
     {
       _id: "5a422aa71b54a676234d17f8",
@@ -15,12 +15,11 @@ describe("favorite blog", () => {
   ];
 
   const testResult = {
-    title: "Go To Statement Considered Harmful",
     author: "Edsger W. Dijkstra",
-    likes: 5,
+    blogs: 1,
   };
-  test("when list has only one blog, return that blog", () => {
-    const result = listHelper.favoriteBlog(listWithOneBlog);
+  test("when list has only one blog, return that author and count 1 blog", () => {
+    const result = listHelper.mostBlogs(listWithOneBlog);
     assert.deepStrictEqual(result, testResult);
   });
 
@@ -75,12 +74,11 @@ describe("favorite blog", () => {
     },
   ];
 
-  test("when list has many blogs, return the blog with most likes", () => {
-    const result = listHelper.favoriteBlog(blogs);
+  test("when list has many blogs, return the author who wrote the most and how many he wrote", () => {
+    const result = listHelper.mostBlogs(blogs);
     const testResult = {
-      title: "Canonical string reduction",
-      author: "Edsger W. Dijkstra",
-      likes: 12,
+      author: "Robert C. Martin",
+      blogs: 3,
     };
     assert.deepStrictEqual(result, testResult);
   });
@@ -88,7 +86,7 @@ describe("favorite blog", () => {
   const listWithNoBlogs = [];
 
   test("when list has no blogs, return an error message", () => {
-    const result = listHelper.favoriteBlog(listWithNoBlogs);
+    const result = listHelper.mostBlogs(listWithNoBlogs);
     assert.strictEqual(result, "There are no blog posts");
   });
 });
