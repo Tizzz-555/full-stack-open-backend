@@ -46,18 +46,30 @@ const mostBlogs = (blogposts) => {
 
 const mostLikes = (blogposts) => {
   if (blogposts.length > 0) {
-    let counterArray = {};
+    let counterObj = {};
+
     blogposts.forEach((b) => {
-      if (counterObj[b.author] === b.author) {
-        counterObj[likes] = counterObj[likes] += b.likes;
+      if (_.has(counterObj, b.author)) {
+        counterObj[b.author] += b.likes;
       } else {
-        c;
+        counterObj[b.author] = b.likes;
       }
     });
+
+    let convertedArray = Object.keys(counterObj).map((key) => ({
+      author: key,
+      likes: counterObj[key],
+    }));
+
+    let biggestObj = _.maxBy(convertedArray, (o) => {
+      return o.likes;
+    });
+    return biggestObj;
   } else {
     return "There are no blog posts";
   }
 };
+
 module.exports = {
   dummy,
   totalLikes,
