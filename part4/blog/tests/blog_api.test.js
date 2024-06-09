@@ -19,6 +19,7 @@ describe("blog api test", () => {
     blogObject = new Blog(helper.initialBlogs[1]);
     await blogObject.save();
   });
+
   test("blogs are returned as json", async () => {
     await api
       .get("/api/blogs")
@@ -30,6 +31,15 @@ describe("blog api test", () => {
     const response = await api.get("/api/blogs");
 
     assert.strictEqual(response.body.length, helper.initialBlogs.length);
+  });
+
+  test("unique identifier is returned as 'id'", async () => {
+    const response = await api.get("/api/blogs");
+
+    assert.deepStrictEqual(
+      response.body.every((b) => b.hasOwnProperty("id")),
+      true
+    );
   });
 });
 
