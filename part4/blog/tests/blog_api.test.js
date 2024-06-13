@@ -41,6 +41,27 @@ describe("blog api test", () => {
       true
     );
   });
+
+  test("succesfully create a blog post", async () => {
+    const newBlog = {
+      title: "Python patterns",
+      author: "Nicholas Chen",
+      url: "https://pythonpatterns.com/",
+      likes: 3,
+    };
+
+    await api
+      .post("/api/blogs")
+      .send(newBlog)
+      .expect(201)
+      .expect("Content-Type", /application\/json/);
+
+    const blogsAtEnd = await helper.blogsInDb();
+    assert.strictEqual(helper.initialBlogs.length + 1, blogsAtEnd.length);
+
+    const titles = blogsAtEnd.map((b) => b.title);
+    assert(titles.includes("Python patterns"));
+  });
 });
 
 after(async () => {
