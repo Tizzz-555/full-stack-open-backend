@@ -62,6 +62,26 @@ describe("blog api test", () => {
     const titles = blogsAtEnd.map((b) => b.title);
     assert(titles.includes("Python patterns"));
   });
+
+  test("a blog with no likes is defaulted to 0", async () => {
+    const newBlog = {
+      title: "PHP patterns",
+      author: "Riky Chen",
+      url: "https://phppatterns.com/",
+    };
+
+    await api
+      .post("/api/blogs")
+      .send(newBlog)
+      .expect(201)
+      .expect("Content-Type", /application\/json/);
+
+    const blogsAtEnd = await helper.blogsInDb();
+    const zeroLikesTitle = blogsAtEnd.find((b) => b.title === newBlog.title);
+
+    // assert.deepStrictEqual(zeroLikesTitle.likes, 0);
+    assert(zeroLikesTitle.likes == 0);
+  });
 });
 
 after(async () => {
