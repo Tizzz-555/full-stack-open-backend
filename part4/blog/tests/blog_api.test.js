@@ -13,11 +13,10 @@ describe("blog api test", () => {
   beforeEach(async () => {
     await Blog.deleteMany({});
 
-    let blogObject = new Blog(helper.initialBlogs[0]);
-    await blogObject.save();
-
-    blogObject = new Blog(helper.initialBlogs[1]);
-    await blogObject.save();
+    for (let blog of helper.initialBlogs) {
+      let blogObject = new Blog(blog);
+      await blogObject.save();
+    }
   });
 
   test("blogs are returned as json", async () => {
@@ -79,8 +78,20 @@ describe("blog api test", () => {
     const blogsAtEnd = await helper.blogsInDb();
     const zeroLikesTitle = blogsAtEnd.find((b) => b.title === newBlog.title);
 
-    // assert.deepStrictEqual(zeroLikesTitle.likes, 0);
     assert(zeroLikesTitle.likes == 0);
+  });
+
+  test("trying to post a blog with no title or url gets a 400 status response", async () => {
+    const newBlog = {
+      author: "Nicholas Chen",
+      likes: 33,
+    };
+
+    await api.post("/api/blogs").send(newBlog).expect(400);
+
+    const blogsAtEnd = await helper.blogsInDb();
+
+    assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length);
   });
 });
 
