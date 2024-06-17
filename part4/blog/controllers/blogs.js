@@ -16,12 +16,15 @@ blogsRouter.post("/", async (req, res) => {
     likes: body.likes || 0,
   });
 
-  if (!blog.title || !blog.url) {
-    res.status(400).end();
-  } else {
-    const savedBlog = await blog.save();
-    res.status(201).json(savedBlog);
-  }
+  // if (!blog.title || !blog.url) {
+  //   res.status(400).end();
+  // } else {
+  //   const savedBlog = await blog.save();
+  //   res.status(201).json(savedBlog);
+  // }
+
+  const savedBlog = await blog.save();
+  res.status(201).json(savedBlog);
 });
 
 module.exports = blogsRouter;
