@@ -77,9 +77,9 @@ describe("when there is initially some blogs saved", () => {
         .expect("Content-Type", /application\/json/);
 
       const blogsAtEnd = await helper.blogsInDb();
-      const zeroLikesTitle = blogsAtEnd.find((b) => b.title === newBlog.title);
+      const zeroLikesBlog = blogsAtEnd.find((b) => b.title === newBlog.title);
 
-      assert(zeroLikesTitle.likes == 0);
+      assert(zeroLikesBlog.likes == 0);
     });
 
     test("trying to post a blog with no title or url gets a 400 status response", async () => {
@@ -93,6 +93,33 @@ describe("when there is initially some blogs saved", () => {
       const blogsAtEnd = await helper.blogsInDb();
 
       assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length);
+    });
+  });
+
+  describe("update of a blog", () => {
+    test("succeeds if id is valid", async () => {
+      const blogsAtStart = await helper.blogsInDb();
+      const blogToView = blogsAtStart[0];
+      const updatedBlog = {
+        title: "React patterns",
+        author: "Michael Chan",
+        url: "https://reactpatterns.com/",
+        likes: 2,
+      };
+
+      await api
+        .put(`/api/blogs/${blogToView.id}`)
+        .send(updatedBlog)
+        .expect(200)
+        .expect("Content-Type", /application\/json/);
+
+      const blogsAtEnd = await helper.blogsInDb();
+      assert.strictEqual(blogsAtStart.length, blogsAtEnd.length);
+
+      const updatedBlogRes = blogsAtEnd.find(
+        (b) => b.title === updatedBlog.title
+      );
+      assert(updatedBlogRes.likes == updatedBlog.likes);
     });
   });
 
