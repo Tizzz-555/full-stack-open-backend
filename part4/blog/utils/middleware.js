@@ -1,5 +1,13 @@
 const logger = require("./logger");
 
+const tokenExtractor = (req, res, next) => {
+  const authorization = req.get("authorization");
+  if (authorization && authorization.startsWith("Bearer ")) {
+    req["token"] = authorization.replace("Bearer ", "");
+  }
+  next();
+};
+
 const requestLogger = (req, res, next) => {
   logger.info("Method:", req.method);
   logger.info("Path:  ", req.path);
@@ -28,14 +36,6 @@ const errorHandler = (error, req, res, next) => {
     return res.status(401).json({ error: "token invalid" });
   }
 
-  // else if (
-  //   error.message.includes("is shorter than the minimum allowed length")
-  // ) {
-  //   return res
-  //     .status(400)
-  //     .json({ error: "expected `username` to be longer than 3 characters" });
-  // }
-
   next(error);
 };
 
@@ -43,4 +43,5 @@ module.exports = {
   requestLogger,
   unknownEndpoint,
   errorHandler,
+  tokenExtractor,
 };
