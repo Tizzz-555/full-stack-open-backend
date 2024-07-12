@@ -10,6 +10,10 @@ blogsRouter.post("/", async (req, res) => {
   const body = req.body;
   const user = req.user;
 
+  if (!user) {
+    return res.status(401).json({ error: "user missing or invalid" });
+  }
+
   const blog = new Blog({
     title: body.title,
     author: body.author,

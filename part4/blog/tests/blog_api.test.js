@@ -2,16 +2,25 @@ const { test, after, describe, beforeEach } = require("node:test");
 const assert = require("node:assert");
 const supertest = require("supertest");
 const mongoose = require("mongoose");
+const bcrypt = require("bcrypt");
 
 const helper = require("./test_helper");
 const app = require("../app");
 const api = supertest(app);
 
 const Blog = require("../models/blog");
+const User = require("../models/user");
 
 describe("when there is initially some blogs saved", () => {
   beforeEach(async () => {
     await Blog.deleteMany({});
+    await User.deleteMany({});
+
+    const user = new User({
+      username: "Tiuz",
+      passwordHash: await bcrypt.hash("Zanetti", 10),
+    });
+    await user.save();
 
     for (let blog of helper.initialBlogs) {
       let blogObject = new Blog(blog);
@@ -42,17 +51,35 @@ describe("when there is initially some blogs saved", () => {
   });
 
   describe("addition of a new blog", () => {
-    test("succesfully create a blog post", async () => {
+    let token;
+
+    beforeEach(async () => {
+      const newLogin = {
+        username: "Tiuz",
+        password: "Zanetti",
+      };
+      const res = await api
+        .post("/api/login")
+        .send(newLogin)
+        .expect(200)
+        .expect("Content-Type", /application\/json/);
+
+      token = res.body.token;
+      console.log("Token:", token);
+    });
+
+    test("successfully create a blog post", async () => {
       const newBlog = {
-        title: "Python patterns",
-        author: "Nicholas Chen",
-        url: "https://pythonpatterns.com/",
-        likes: 3,
+        title: "Una vita da mediano",
+        author: "Tiuz",
+        url: "https://saneti.com",
+        likes: 23,
       };
 
       await api
         .post("/api/blogs")
         .send(newBlog)
+        .set("Authorization", `Bearer ${token}`)
         .expect(201)
         .expect("Content-Type", /application\/json/);
 
@@ -60,7 +87,25 @@ describe("when there is initially some blogs saved", () => {
       assert.strictEqual(helper.initialBlogs.length + 1, blogsAtEnd.length);
 
       const titles = blogsAtEnd.map((b) => b.title);
-      assert(titles.includes("Python patterns"));
+      assert(titles.includes("Una vita da mediano"));
+    });
+
+    test("fails with status code 401 if token is not provided", async () => {
+      const newBlog = {
+        title: "Una vita da mediano",
+        author: "Tiuz",
+        url: "https://saneti.com",
+        likes: 23,
+      };
+
+      await api
+        .post("/api/blogs")
+        .send(newBlog)
+        .expect(401)
+        .expect("Content-Type", /application\/json/);
+
+      const blogsAtEnd = await helper.blogsInDb();
+      assert.strictEqual(helper.initialBlogs.length, blogsAtEnd.length);
     });
 
     test("a blog with no likes is defaulted to 0", async () => {
