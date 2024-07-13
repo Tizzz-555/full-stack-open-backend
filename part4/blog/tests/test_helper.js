@@ -3,16 +3,18 @@ const Blog = require("../models/blog");
 
 const initialBlogs = [
   {
-    title: "React patterns",
-    author: "Michael Chan",
-    url: "https://reactpatterns.com/",
-    likes: 7,
+    title: "Test blog 1",
+    author: "Tizzz",
+    url: "www.myblog.com",
+    likes: 58,
+    id: "667fe7216ad13934d66d0147",
   },
   {
-    title: "Go To Statement Considered Harmful",
-    author: "Edsger W. Dijkstra",
-    url: "http://www.u.arizona.edu/~rubinson/copyright_violations/Go_To_Considered_Harmful.html",
-    likes: 5,
+    title: "Test blog 2",
+    author: "Tiuz",
+    url: "www.myblog.com",
+    likes: 12,
+    id: "66842c23593731791022d4e9",
   },
 ];
 
