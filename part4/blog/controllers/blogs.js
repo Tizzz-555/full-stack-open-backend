@@ -32,17 +32,13 @@ blogsRouter.post("/", async (req, res) => {
 blogsRouter.put("/:id", async (req, res) => {
   const body = req.body;
 
-  const blog = {
-    title: body.title,
-    author: body.author,
-    url: body.url,
+  const likes = {
     likes: body.likes,
-    user: body.user.id,
   };
 
-  const updatedBlog = await Blog.findByIdAndUpdate(req.params.id, blog, {
+  const updatedBlog = await Blog.findByIdAndUpdate(req.params.id, likes, {
     new: true,
-  });
+  }).populate("user", { username: 1, name: 1 });
   res.json(updatedBlog);
 });
 
