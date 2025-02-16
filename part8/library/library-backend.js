@@ -3,6 +3,24 @@ const { startStandaloneServer } = require("@apollo/server/standalone");
 const { v1: uuid } = require("uuid");
 const { GraphQLError } = require("graphql");
 
+const mongoose = require("mongoose");
+mongoose.set("strictQuery", false);
+const Author = require("./models/author");
+const Book = require("./models/book");
+require("dotenv").config();
+
+const MONGODB_URI = process.env.MONGODB_URI;
+console.log("connecting to", MONGODB_URI);
+
+mongoose
+  .connect(MONGODB_URI)
+  .then(() => {
+    console.log("connected to MongoDB");
+  })
+  .catch((error) => {
+    console.log("error connection to MongoDB:", error.message);
+  });
+
 let authors = [
   {
     name: "Robert Martin",
@@ -85,9 +103,9 @@ const typeDefs = `
   type Book {
     title: String!
     published: Int!
-    author: String!
-    id: ID!
+    author: Author!
     genres: [String!]!
+    id: ID!
   }
 
   type Author {
@@ -107,34 +125,36 @@ const typeDefs = `
   type Mutation {
     addBook(
     title: String!
-    published: Int!
     author: String!
+    published: Int!
     genres: [String!] 
     ): Book
 
     editAuthor(
       name: String!
-      setBornTo: Int
+      setBornTo: Int!
     ): Author
   }
 `;
 
 const resolvers = {
   Query: {
-    bookCount: () => books.length,
+    bookCount: () => Book.collection.countDocuments(),
     authorCount: () => authors.length,
-    allBooks: (root, args) => {
+    allBooks: async (root, args) => {
       if (!args.author && !args.genre) {
-        return books;
+        return Book.find({});
       }
 
-      return books.filter(
-        (b) =>
-          (!args.author || b.author === args.author) &&
-          (!args.genre || b.genres.includes(args.genre))
-      );
+      // return books.filter(
+      //   (b) =>
+      //     (!args.author || b.author === args.author) &&
+      //     (!args.genre || b.genres.includes(args.genre))
+      // );
     },
-    allAuthors: () => authors,
+    allAuthors: async () => {
+      return Author.find({});
+    },
   },
 
   Author: {
@@ -142,37 +162,50 @@ const resolvers = {
       return books.filter((b) => b.author === root.name).length;
     },
   },
+
   Mutation: {
-    addBook: (root, args) => {
-      if (
-        books.find(
-          (b) =>
-            b.name === args.name &&
-            b.author === args.author &&
-            b.published === args.published
-        )
-      ) {
+    addBook: async (root, args, context) => {
+      let author = await Author.findOne({ name: args.author });
+
+      if (!author) {
+        author = new Author({ name: args.author });
+        await author.save();
+      }
+      const existingBook = await Book.findOne({
+        title: args.title,
+        author: author._id, // Store authors as ObjectIds
+        published: args.published,
+      });
+
+      if (existingBook) {
         throw new GraphQLError("Book must be unique", {
           extensions: {
             code: "BAD_USER_INPUT",
-            invalidArgs: [args.name, args.author, args.published],
+            invalidArgs: [args.title, args.author, args.published],
           },
         });
       }
 
-      const book = { ...args, id: uuid() };
-      if (!authors.includes(args.author)) {
-        authors = authors.concat({
-          name: args.author,
-          id: uuid(),
-          born: null,
-          bookCount: 1,
+      const newBook = new Book({
+        title: args.title,
+        published: args.published,
+        genres: args.genres,
+        author: author._id,
+      });
+
+      try {
+        await newBook.save();
+      } catch (e) {
+        throw new GraphQLError("Saving book failed", {
+          extensions: {
+            code: "BAD_USER_INPUT",
+          },
         });
       }
 
-      books = books.concat(book);
-      return book;
+      return newBook.populate("author");
     },
+
     editAuthor: (root, args) => {
       const author = authors.find((a) => a.name === args.name);
       if (!author) {
