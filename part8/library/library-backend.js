@@ -140,12 +140,13 @@ const typeDefs = `
 const resolvers = {
   Query: {
     bookCount: () => Book.collection.countDocuments(),
-    authorCount: () => authors.length,
+    authorCount: () => Author.collection.countDocuments(),
     allBooks: async (root, args) => {
-      if (!args.author && !args.genre) {
+      if (!args.genre) {
         return Book.find({});
       }
 
+      return Book.find({ genres: args.genre }).populate("author");
       // return books.filter(
       //   (b) =>
       //     (!args.author || b.author === args.author) &&
@@ -156,20 +157,24 @@ const resolvers = {
       return Author.find({});
     },
   },
-
-  Author: {
-    bookCount: (root) => {
-      return books.filter((b) => b.author === root.name).length;
-    },
-  },
-
   Mutation: {
     addBook: async (root, args, context) => {
       let author = await Author.findOne({ name: args.author });
 
       if (!author) {
-        author = new Author({ name: args.author });
+        author = new Author({ name: args.author, bookCount: 1 });
+      } else {
+        author.bookCount += 1;
+      }
+
+      try {
         await author.save();
+      } catch (error) {
+        throw new GraphQLError("Saving author failed", {
+          extensions: {
+            code: "BAD_USER_INPUT",
+          },
+        });
       }
       const existingBook = await Book.findOne({
         title: args.title,
@@ -206,15 +211,26 @@ const resolvers = {
       return newBook.populate("author");
     },
 
-    editAuthor: (root, args) => {
-      const author = authors.find((a) => a.name === args.name);
-      if (!author) {
+    editAuthor: async (root, args) => {
+      const existingAuthor = await Author.findOne({ name: args.name });
+      if (!existingAuthor) {
         return null;
       }
 
-      const updatedAuthor = { ...author, born: args.setBornTo };
-      authors = authors.map((a) => (a.name === args.name ? updatedAuthor : a));
-      return updatedAuthor;
+      existingAuthor.born = args.setBornTo;
+      try {
+        await existingAuthor.save();
+      } catch (e) {
+        throw new GraphQLError("Editing author failed", {
+          extensions: {
+            code: "BAD_USER_INPUT",
+            invalidArgs: args.setBornTo,
+            error,
+          },
+        });
+      }
+
+      return existingAuthor;
     },
   },
 };
