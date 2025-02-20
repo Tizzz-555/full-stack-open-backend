@@ -147,11 +147,6 @@ const resolvers = {
       }
 
       return Book.find({ genres: args.genre }).populate("author");
-      // return books.filter(
-      //   (b) =>
-      //     (!args.author || b.author === args.author) &&
-      //     (!args.genre || b.genres.includes(args.genre))
-      // );
     },
     allAuthors: async () => {
       return Author.find({});
@@ -170,12 +165,20 @@ const resolvers = {
       try {
         await author.save();
       } catch (error) {
+        if (error.name === "ValidationError") {
+          throw new GraphQLError("Author validation failed", {
+            extensions: {
+              code: "BAD_USER_INPUT",
+              invalidArgs: args.author,
+              message: error.message,
+            },
+          });
+        }
         throw new GraphQLError("Saving author failed", {
-          extensions: {
-            code: "BAD_USER_INPUT",
-          },
+          extensions: { code: "BAD_USER_INPUT" },
         });
       }
+
       const existingBook = await Book.findOne({
         title: args.title,
         author: author._id, // Store authors as ObjectIds
@@ -200,11 +203,18 @@ const resolvers = {
 
       try {
         await newBook.save();
-      } catch (e) {
+      } catch (error) {
+        if (error.name === "ValidationError") {
+          throw new GraphQLError("Book validation failed", {
+            extensions: {
+              code: "BAD_USER_INPUT",
+              invalidArgs: args,
+              message: error.message,
+            },
+          });
+        }
         throw new GraphQLError("Saving book failed", {
-          extensions: {
-            code: "BAD_USER_INPUT",
-          },
+          extensions: { code: "BAD_USER_INPUT" },
         });
       }
 
