@@ -4,6 +4,7 @@ const pubsub = new PubSub();
 const { GraphQLError } = require("graphql");
 const Author = require("./models/author");
 const Book = require("./models/book");
+const User = require("./models/user");
 const jwt = require("jsonwebtoken");
 
 const resolvers = {
