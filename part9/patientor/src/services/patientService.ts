@@ -1,5 +1,5 @@
 import patients from "../../data/patientsData";
-import { NonSensitivePatient, Patient } from "../types";
+import { NonSensitivePatient, Patient, NewPatient } from "../types";
 import { v1 as uuid } from "uuid";
 
 const getPatients = (): NonSensitivePatient[] => {
@@ -12,18 +12,14 @@ const getPatients = (): NonSensitivePatient[] => {
   }));
 };
 
-const addPatient = (
-  name: string,
-  dateOfBirth: string,
-  ssn: string,
-  gender: string,
-  occupation: string
-): Patient => {
+const addPatient = (patient: NewPatient): Patient => {
   try {
-    const id = uuid();
-    const patientWithId = { id, name, dateOfBirth, ssn, gender, occupation };
-    patients.push(patientWithId);
-    return patientWithId;
+    const newPatient = {
+      id: uuid(),
+      ...patient,
+    };
+    patients.push(newPatient);
+    return newPatient;
   } catch (error) {
     console.error("Error adding patient:", error);
     throw new Error("Failed to add patient");
