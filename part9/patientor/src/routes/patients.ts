@@ -10,6 +10,18 @@ router.get("/", (_req, res: express.Response<NonSensitivePatient[]>) => {
   res.send(patientService.getPatients());
 });
 
+// Create an endpoint /api/patients/:id to the backend that returns all of the patient information for one patient, including the array of patient entries that is still empty for all the patients.
+
+router.get("/:id", (req, res) => {
+  const patient = patientService.getPatient(req.params.id);
+
+  if (patient) {
+    res.send(patient);
+  } else {
+    res.sendStatus(404);
+  }
+});
+
 const newPatientParser = (req: Request, _res: Response, next: NextFunction) => {
   try {
     NewPatientSchema.parse(req.body);
@@ -32,7 +44,6 @@ const errorMiddleware = (
     next(error);
   }
 };
-
 router.post(
   "/",
   newPatientParser,
