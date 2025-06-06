@@ -51,6 +51,15 @@ router.post(
   }
 );
 
+router.post("/:id/entries", (req: Request, res: Response) => {
+  const {} = req.body;
+  if (entry) {
+    res.json(entry);
+  } else {
+    res.sendStatus(404);
+  }
+});
+
 router.use(errorMiddleware);
 
 export default router;
