@@ -38,20 +38,6 @@ const addPatient = (patient: NewPatient): Patient => {
   }
 };
 
-const editPatient = (
-  id: string,
-  updatedFields: Partial<Omit<Patient, "id">>
-): Patient | undefined => {
-  const patientIndex = patients.findIndex((p) => p.id === id);
-  if (patientIndex === -1) {
-    return undefined;
-  }
-  const existingPatient = patients[patientIndex];
-  const updatedPatient = { ...existingPatient, ...updatedFields, id };
-  patients[patientIndex] = updatedPatient;
-  return updatedPatient;
-};
-
 const addEntry = (id: string, entry: EntryWithoutId): Entry | undefined => {
   const patientIndex = patients.findIndex((p) => p.id === id);
   if (patientIndex === -1) {
@@ -70,6 +56,5 @@ export default {
   getPatients,
   getPatient,
   addPatient,
-  editPatient,
   addEntry,
 };
