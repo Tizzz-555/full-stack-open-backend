@@ -1,4 +1,4 @@
-import { Gender, Diagnosis, HealthCheckRating } from "./types";
+import { Gender, HealthCheckRating } from "./types";
 import { z } from "zod";
 import { Request, Response, NextFunction } from "express";
 
@@ -17,7 +17,6 @@ export const newPatientParser = (
 ) => {
   try {
     NewPatientSchema.parse(req.body);
-    console.log(req.body);
     next();
   } catch (error: unknown) {
     next(error);
@@ -37,20 +36,20 @@ export const errorMiddleware = (
   }
 };
 
-const parseDiagnosisCodes = (object: unknown): Array<Diagnosis["code"]> => {
-  if (!object || typeof object !== "object" || !("diagnosisCodes" in object)) {
-    // we will just trust the data to be in correct form
-    return [] as Array<Diagnosis["code"]>;
-  }
+// const parseDiagnosisCodes = (object: unknown): Array<Diagnosis["code"]> => {
+//   if (!object || typeof object !== "object" || !("diagnosisCodes" in object)) {
+//     // we will just trust the data to be in correct form
+//     return [] as Array<Diagnosis["code"]>;
+//   }
 
-  return object.diagnosisCodes as Array<Diagnosis["code"]>;
-};
+//   return object.diagnosisCodes as Array<Diagnosis["code"]>;
+// };
 
 const BaseEntrySchema = z.object({
-  description: z.string(),
-  date: z.string(),
-  specialist: z.string(),
-  diagnosisCodes: z.preprocess(parseDiagnosisCodes, z.array(z.string())),
+  description: z.string().min(1, "Description is required"),
+  date: z.string().min(1, "Date is required"),
+  specialist: z.string().min(1, "Specialist is required"),
+  diagnosisCodes: z.array(z.string()).optional(),
 });
 
 const HealthCheckEntrySchema = BaseEntrySchema.extend({
@@ -60,11 +59,11 @@ const HealthCheckEntrySchema = BaseEntrySchema.extend({
 
 const OccupationalHealthcareEntrySchema = BaseEntrySchema.extend({
   type: z.literal("OccupationalHealthcare"),
-  employerName: z.string(),
+  employerName: z.string().min(1, "Employer name is required"),
   sickLeave: z
     .object({
-      date: z.string(),
-      criteria: z.string(),
+      startDate: z.string().min(1, "Select an end date"),
+      endDate: z.string().min(1, "Select a start date"),
     })
     .optional(),
 });
@@ -72,8 +71,8 @@ const OccupationalHealthcareEntrySchema = BaseEntrySchema.extend({
 const HospitalEntrySchema = BaseEntrySchema.extend({
   type: z.literal("Hospital"),
   discharge: z.object({
-    date: z.string(),
-    criteria: z.string(),
+    date: z.string().min(1, "Select a date"),
+    criteria: z.string().min(1, "Enter a criteria"),
   }),
 });
 
@@ -90,7 +89,6 @@ export const newEntryParser = (
 ) => {
   try {
     NewEntrySchema.parse(req.body);
-    console.log(req.body);
     next();
   } catch (error: unknown) {
     next(error);
