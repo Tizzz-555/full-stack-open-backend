@@ -29,7 +29,6 @@ app.use(middleware.tokenExtractor);
 app.use(middleware.requestLogger);
 app.use("/api/blogs", middleware.userExtractor, blogsRouter);
 app.use("/api/users", usersRouter);
-app.use("/api/blogs", blogsRouter);
 app.use("/api/login", loginRouter);
 if (process.env.NODE_ENV === "test") {
   const testingRouter = require("./controllers/testing");
